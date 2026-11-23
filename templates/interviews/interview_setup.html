@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Setup AI Mock Interview | AI Interviewer{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-custom p-4 shadow-sm">
+                <div class="text-center mb-4">
+                    <div class="badge bg-primary-subtle text-primary p-3 rounded-circle mb-3">
+                        <i class="fa-solid fa-sliders fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold">Configure Your AI Interview</h3>
+                    <p class="text-muted col-md-9 mx-auto">
+                        Choose your interview track, subject matter, and difficulty. The AI will generate tailored questions and conduct a live voice interview.
+                    </p>
+                </div>
+
+                <!-- Resume Grounding Indicator -->
+                {% if resume %}
+                    <div class="alert alert-success d-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <i class="fa-solid fa-circle-check fs-5 me-2"></i>
+                            <strong>Resume-Grounded Mode Active:</strong> Questions will reference 
+                            <em>{{ resume.filename }}</em> ({{ resume.skills.count }} skills & projects).
+                        </div>
+                        <a href="{% url 'resume_upload' %}" class="btn btn-sm btn-outline-success">Change Resume</a>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <i class="fa-solid fa-triangle-exclamation fs-5 me-2"></i>
+                            <strong>No Resume Uploaded:</strong> General questions will be generated. Upload a resume for personalized project questions.
+                        </div>
+                        <a href="{% url 'resume_upload' %}" class="btn btn-sm btn-warning text-dark">Upload PDF</a>
+                    </div>
+                {% endif %}
+
+                <form method="POST" id="interviewSetupForm">
+                    {% csrf_token %}
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Interview Track <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            <small class="text-muted">Technical, HR Behavioral, or Aptitude</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Domain / Subject <span class="text-danger">*</span></label>
+                            {{ form.subject }}
+                            <small class="text-muted">Target technical specialization</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Difficulty Level <span class="text-danger">*</span></label>
+                            {{ form.difficulty }}
+                            <small class="text-muted">Adaptive dynamically raises or lowers challenge</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Questions Count</label>
+                            {{ form.target_questions_count }}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Session Duration</label>
+                            {{ form.duration_minutes }}
+                        </div>
+                    </div>
+
+                    <div class="card bg-light border-0 p-3 mt-4 rounded-3">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fa-solid fa-headset text-primary"></i>
+                            <span class="fw-bold small">Voice Interview Requirements:</span>
+                        </div>
+                        <p class="small text-muted mb-0">
+                            A working microphone is recommended. If your microphone is unavailable, you can also type answers manually into the live transcript box.
+                        </p>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary-custom btn-lg" id="startInterviewBtn">
+                            <i class="fa-solid fa-play me-2"></i> Launch AI Interview Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('interviewSetupForm').addEventListener('submit', function() {
+    const btn = document.getElementById('startInterviewBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Generating Personalized Questions with Groq LLM...`;
+});
+</script>
+{% endblock %}

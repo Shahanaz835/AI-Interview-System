@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Personalized AI Learning Roadmap | AI Interviewer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-graduation-cap text-secondary me-2"></i>Personalized Learning Roadmap</h2>
+            <p class="text-muted small mb-0">AI-synthesized revision guide targeting your interview weaknesses</p>
+        </div>
+        <a href="{% url 'interview_setup' %}" class="btn btn-primary-custom">
+            <i class="fa-solid fa-microphone me-1"></i> Start Interview Practice
+        </a>
+    </div>
+
+    {% if latest_roadmap %}
+        <!-- Active Roadmap Card -->
+        <div class="card card-custom p-4 mb-4 bg-white shadow-sm border-start border-primary border-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2">
+                        Target Subject: {{ latest_roadmap.subject }}
+                    </span>
+                    <span class="text-muted small ms-2">
+                        Generated on {{ latest_roadmap.created_at|date:"d M Y, h:i A" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Weak Areas Identified -->
+            <div class="alert alert-warning border-0 mb-4 p-3 rounded-3">
+                <h6 class="fw-bold text-warning-emphasis mb-2">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Identified Knowledge Gaps from Recent Session:
+                </h6>
+                <ul class="mb-0 small ps-3">
+                    {% for area in latest_roadmap.weak_areas %}
+                        <li>{{ area }}</li>
+                    {% empty %}
+                        <li>Continue practicing to pinpoint specific conceptual gaps.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Recommended Study Topics -->
+                <div class="col-lg-6">
+                    <div class="card bg-light border-0 p-4 h-100 rounded-3">
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="fa-solid fa-book-bookmark text-primary me-2"></i>Recommended Study Topics
+                        </h5>
+                        <div class="list-group list-group-flush bg-transparent">
+                            {% for item in latest_roadmap.recommended_topics %}
+                                <div class="list-group-item bg-transparent px-0 py-2 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark">{{ item.topic }}</strong>
+                                        <span class="badge {% if item.priority == 'High' %}bg-danger{% else %}bg-primary{% endif %} px-2 py-1">
+                                            {{ item.priority }} Priority
+                                        </span>
+                                    </div>
+                                    <p class="small text-muted mb-0">{{ item.reason }}</p>
+                                </div>
+                            {% empty %}
+                                <p class="text-muted small">No specific topics flagged yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High-Impact Practice Questions -->
+                <div class="col-lg-6">
+                    <div class="card bg-light border-0 p-4 h-100 rounded-3">
+                        <h5 class="fw-bold text-dark mb-3">
+                            <i class="fa-solid fa-circle-question text-success me-2"></i>Target Practice Questions
+                        </h5>
+                        <div class="list-group list-group-flush bg-transparent">
+                            {% for q in latest_roadmap.practice_questions %}
+                                <div class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex align-items-start">
+                                    <span class="badge bg-success-subtle text-success me-2 mt-1">{{ forloop.counter }}</span>
+                                    <span class="small fw-semibold text-secondary">{{ q }}</span>
+                                </div>
+                            {% empty %}
+                                <p class="text-muted small">No practice questions suggested.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Plan -->
+            {% if latest_roadmap.action_plan %}
+                <div class="card bg-primary-subtle border-0 p-4 rounded-3">
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="fa-solid fa-calendar-days me-2"></i>Structured 7-Day Action Plan
+                    </h5>
+                    <p class="small text-dark mb-0" style="white-space: pre-wrap; line-height: 1.6;">{{ latest_roadmap.action_plan }}</p>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="card card-custom p-5 text-center bg-white shadow-sm">
+            <i class="fa-solid fa-route fs-1 text-secondary opacity-50 mb-3"></i>
+            <h4 class="fw-bold">No Learning Roadmap Available Yet</h4>
+            <p class="text-muted col-md-6 mx-auto mb-4">
+                Complete at least one mock interview session. The AI will evaluate your answers, find your specific knowledge gaps, and automatically construct a personalized study roadmap!
+            </p>
+            <div>
+                <a href="{% url 'interview_setup' %}" class="btn btn-primary-custom btn-lg">
+                    <i class="fa-solid fa-microphone me-1"></i> Take a Mock Interview Now
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Candidate Dashboard | AI Interviewer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="card card-custom p-4 mb-4 bg-white">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="badge bg-primary rounded-circle p-3 fs-3">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1">Welcome, {{ user.first_name|default:user.username }}!</h2>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge badge-role">
+                                <i class="fa-solid fa-briefcase me-1"></i> {{ profile.target_role|default:'Software Engineer' }}
+                            </span>
+                            <span class="badge badge-exp">
+                                <i class="fa-solid fa-user-graduate me-1"></i> {{ profile.experience_level|default:'Fresher' }}
+                            </span>
+                            <span class="text-muted small">
+                                <i class="fa-regular fa-calendar-check me-1"></i> Member since {{ user.date_joined|date:"M Y" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Stat 1: Interviews Taken -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Interviews Completed</span>
+                    <span class="badge bg-primary-subtle text-primary p-2 rounded-circle">
+                        <i class="fa-solid fa-headset"></i>
+                    </span>
+                </div>
+                <h3 class="fw-bold mb-0">{{ total_interviews }}</h3>
+                <small class="text-muted">Total practice sessions</small>
+            </div>
+        </div>
+
+        <!-- Stat 2: Average Score -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Average Score</span>
+                    <span class="badge bg-success-subtle text-success p-2 rounded-circle">
+                        <i class="fa-solid fa-star"></i>
+                    </span>
+                </div>
+                <h3 class="fw-bold mb-0">{% if avg_score %}{{ avg_score }}/10{% else %}N/A{% endif %}</h3>
+                <small class="text-muted">Overall evaluation score</small>
+            </div>
+        </div>
+
+        <!-- Stat 3: Resume Status -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Resume Status</span>
+                    <span class="badge {% if has_resume %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} p-2 rounded-circle">
+                        <i class="fa-solid {% if has_resume %}fa-file-circle-check{% else %}fa-file-circle-exclamation{% endif %}"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold mb-0">
+                    {% if has_resume %}
+                        <span class="text-success fs-5"><i class="fa-solid fa-circle-check me-1"></i> Uploaded</span>
+                    {% else %}
+                        <span class="text-warning fs-5"><i class="fa-solid fa-circle-exclamation me-1"></i> Pending</span>
+                    {% endif %}
+                </h4>
+                <small class="text-muted">
+                    {% if has_resume %}
+                        Ready for personalized Q&A
+                    {% else %}
+                        <a href="{% url 'resume_upload' %}" class="text-decoration-none">Upload Resume &rarr;</a>
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+
+        <!-- Stat 4: Readiness -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold">Interview Readiness</span>
+                    <span class="badge bg-info-subtle text-info p-2 rounded-circle">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold mb-0">
+                    {% if total_interviews == 0 %}
+                        <span class="fs-6 text-secondary">Getting Started</span>
+                    {% elif avg_score >= 8.0 %}
+                        <span class="fs-6 text-success">Interview Ready</span>
+                    {% elif avg_score >= 5.0 %}
+                        <span class="fs-6 text-primary">Progressing Well</span>
+                    {% else %}
+                        <span class="fs-6 text-warning">Needs Practice</span>
+                    {% endif %}
+                </h4>
+                <small class="text-muted"><a href="{% url 'learning_roadmap' %}" class="text-decoration-none">View study roadmap &rarr;</a></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Cards: Start Interview Modes -->
+    <h4 class="fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i>Choose Interview Mode</h4>
+    <div class="row g-4 mb-5">
+        <!-- Card 1: Resume-Based & Technical -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4 border-start border-primary border-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-primary text-white px-2 py-1">Core Tech</span>
+                    <i class="fa-solid fa-code text-primary fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Technical Interview</h5>
+                <p class="text-muted small mb-3">
+                    Personalized Q&A grounded in your uploaded resume: Python, Java, DSA, DBMS, Web Development, and project deep-dives.
+                </p>
+                <a href="{% url 'interview_setup' %}?category=technical" class="btn btn-primary-custom w-100 mt-auto">
+                    <i class="fa-solid fa-play me-1"></i> Start Technical Mock
+                </a>
+            </div>
+        </div>
+
+        <!-- Card 2: HR Behavioral -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4 border-start border-success border-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-success text-white px-2 py-1">Behavioral</span>
+                    <i class="fa-solid fa-users text-success fs-3"></i>
+                </div>
+                <h5 class="fw-bold">HR Behavioral Interview</h5>
+                <p class="text-muted small mb-3">
+                    Practice self-introductions, conflict management, strengths, situational scenarios, and leadership using the STAR format.
+                </p>
+                <a href="{% url 'interview_setup' %}?category=hr" class="btn btn-outline-success w-100 mt-auto">
+                    <i class="fa-solid fa-play me-1"></i> Start HR Mock
+                </a>
+            </div>
+        </div>
+
+        <!-- Card 3: Aptitude -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4 border-start border-warning border-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-warning text-dark px-2 py-1">Problem Solving</span>
+                    <i class="fa-solid fa-calculator text-warning fs-3"></i>
+                </div>
+                <h5 class="fw-bold">Aptitude & Reasoning</h5>
+                <p class="text-muted small mb-3">
+                    Quantitative aptitude, logical deductions, data interpretation, and analytical thinking questions.
+                </p>
+                <a href="{% url 'interview_setup' %}?category=aptitude" class="btn btn-outline-warning text-dark w-100 mt-auto">
+                    <i class="fa-solid fa-play me-1"></i> Start Aptitude Mock
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Action Banner -->
+    {% if not has_resume %}
+    <div class="alert alert-light border border-primary border-2 p-4 rounded-3 shadow-sm mb-5 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <h5 class="fw-bold text-primary mb-1"><i class="fa-solid fa-file-arrow-up me-2"></i>Upload Your Resume for Custom Questions</h5>
+            <p class="text-muted mb-0 small">
+                Uploading your resume enables the AI to extract your actual projects, frameworks, and programming languages to conduct realistic interviews.
+            </p>
+        </div>
+        <a href="{% url 'resume_upload' %}" class="btn btn-primary-custom">
+            <i class="fa-solid fa-upload me-1"></i> Upload Resume (PDF)
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Recent Interview History Table -->
+    <div class="card card-custom p-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Recent Interview Sessions</h5>
+            <a href="{% url 'interview_history' %}" class="btn btn-sm btn-link text-decoration-none">View All &rarr;</a>
+        </div>
+
+        {% if recent_interviews %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Role / Subject</th>
+                            <th>Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in recent_interviews %}
+                        <tr>
+                            <td>{{ session.created_at|date:"d M Y, h:i A" }}</td>
+                            <td><span class="badge bg-primary-subtle text-primary">{{ session.category|title }}</span></td>
+                            <td>{{ session.subject|default:"General" }}</td>
+                            <td>
+                                {% if session.final_score %}
+                                    <span class="fw-bold text-success">{{ session.final_score }}/10</span>
+                                {% else %}
+                                    <span class="text-muted">In Progress</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'interview_result' session.id %}" class="btn btn-sm btn-outline-primary">View Report</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="fa-solid fa-clipboard-list fs-1 text-secondary opacity-50 mb-2"></i>
+                <p class="mb-2">No interviews taken yet. Take your first voice interview to see your scores here!</p>
+                <a href="{% url 'interview_setup' %}" class="btn btn-sm btn-primary-custom">
+                    <i class="fa-solid fa-microphone me-1"></i> Take Your First Interview
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Evaluation Report | AI Interviewer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Final Score Header Card -->
+    <div class="card card-custom p-4 mb-4 bg-white shadow-sm border-top border-primary border-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="badge bg-primary rounded-circle p-3 fs-2">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-1">Interview Performance Report</h2>
+                        <p class="text-muted small mb-0">
+                            <strong>{{ session.get_category_display }}</strong> &bull; 
+                            {{ session.subject }} &bull; 
+                            Difficulty: {{ session.get_difficulty_display }} &bull; 
+                            {{ session.completed_at|date:"d M Y, h:i A" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-inline-block text-center p-3 bg-light rounded-3 border">
+                    <span class="small text-muted d-block fw-semibold">FINAL SCORE</span>
+                    <span class="fs-2 fw-bold text-primary">{{ session.final_score|default:"0.0" }}/10</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="row g-3 text-center">
+            <div class="col-sm-4">
+                <span class="text-muted small">Status</span>
+                <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-circle-check me-1"></i> Completed</h5>
+            </div>
+            <div class="col-sm-4">
+                <span class="text-muted small">Questions Answered</span>
+                <h5 class="fw-bold mb-0">{{ questions.count }} Questions</h5>
+            </div>
+            <div class="col-sm-4">
+                <span class="text-muted small">Recommendation</span>
+                <h5 class="fw-bold mb-0">
+                    {% if session.final_score >= 8.0 %}
+                        <span class="text-success">Strong Hire / Advanced</span>
+                    {% elif session.final_score >= 5.0 %}
+                        <span class="text-primary">Potential Hire / Good Foundation</span>
+                    {% else %}
+                        <span class="text-warning">Needs Conceptual Revision</span>
+                    {% endif %}
+                </h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Banner -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h4 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-primary me-2"></i>Question-by-Question Evaluation</h4>
+        <div class="d-flex gap-2">
+            <a href="{% url 'learning_roadmap' %}" class="btn btn-outline-primary">
+                <i class="fa-solid fa-route me-1"></i> View AI Learning Roadmap
+            </a>
+            <a href="{% url 'interview_setup' %}" class="btn btn-primary-custom">
+                <i class="fa-solid fa-rotate-right me-1"></i> Practice Another Interview
+            </a>
+        </div>
+    </div>
+
+    <!-- Questions Evaluation Accordion -->
+    <div class="accordion mb-5" id="questionsAccordion">
+        {% for q in questions %}
+            {% with ans=q.candidate_answer %}
+            {% with ev=ans.evaluation %}
+            <div class="accordion-item card-custom mb-3 border">
+                <h2 class="accordion-header" id="heading{{ q.id }}">
+                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ q.id }}">
+                        <div class="d-flex justify-content-between align-items-center w-100 me-3 flex-wrap gap-2">
+                            <div>
+                                <span class="badge bg-primary-subtle text-primary me-2">Q{{ q.question_number }}</span>
+                                <span class="fw-bold">{{ q.question_text|truncatechars:80 }}</span>
+                            </div>
+                            <div>
+                                {% if ev %}
+                                    <span class="badge {% if ev.score >= 8.0 %}bg-success{% elif ev.score >= 5.0 %}bg-primary{% else %}bg-warning text-dark{% endif %} px-3 py-2">
+                                        Score: {{ ev.score }}/10
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Unanswered</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ q.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#questionsAccordion">
+                    <div class="accordion-body p-4 bg-white">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-secondary small text-uppercase mb-1">Full Question Asked:</h6>
+                            <p class="fs-5 fw-semibold mb-0">{{ q.question_text }}</p>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded-3 border">
+                            <h6 class="fw-bold text-secondary small text-uppercase mb-1">
+                                <i class="fa-solid fa-microphone text-danger me-1"></i> Your Recognized Spoken Answer:
+                            </h6>
+                            <p class="mb-0 text-dark" style="white-space: pre-wrap;">{{ ans.recognized_text|default:"(No answer provided)" }}</p>
+                        </div>
+
+                        {% if ev %}
+                            <div class="alert alert-primary d-flex align-items-center gap-2 mb-3">
+                                <i class="fa-solid fa-volume-high text-primary fs-5"></i>
+                                <span><strong>Interviewer Spoken Response:</strong> "{{ ev.spoken_feedback }}"</span>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="card bg-success-subtle border-0 p-3 h-100">
+                                        <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-check me-1"></i>What You Did Well</h6>
+                                        <ul class="mb-0 small ps-3">
+                                            {% for pt in ev.positive_points %}
+                                                <li>{{ pt }}</li>
+                                            {% empty %}
+                                                <li>Basic attempt made.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-warning-subtle border-0 p-3 h-100">
+                                        <h6 class="fw-bold text-warning-emphasis mb-2"><i class="fa-solid fa-triangle-exclamation me-1"></i>Missing Concepts & Gaps</h6>
+                                        <ul class="mb-0 small ps-3">
+                                            {% for gap in ev.missing_concepts %}
+                                                <li>{{ gap }}</li>
+                                            {% empty %}
+                                                <li>No major gaps detected.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card bg-light border-0 p-3">
+                                <h6 class="fw-bold text-secondary small text-uppercase mb-1">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i> Ideal Benchmark Answer:
+                                </h6>
+                                <p class="small text-muted mb-0">{{ ev.improved_answer }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+
+    <!-- Learning Roadmap Callout -->
+    {% if roadmap %}
+    <div class="card card-custom p-4 bg-light border-primary border-2 shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="fw-bold text-primary mb-1">
+                    <i class="fa-solid fa-graduation-cap me-2"></i>Personalized Learning Roadmap Ready!
+                </h5>
+                <p class="text-muted small mb-0">
+                    Based on your mistakes in this session, the AI has generated targeted practice topics and questions to help you improve.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'learning_roadmap' %}" class="btn btn-primary-custom">
+                    Open Learning Roadmap &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Interviewer | Intelligent AI & Voice-Powered Interview Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section text-center">
+    <div class="container py-4">
+        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-3">
+            <i class="fa-solid fa-sparkles me-1"></i> Powered by Groq LLMs & Web Speech API
+        </span>
+        <h1 class="hero-title display-4 mb-3">
+            Master Technical, HR & Aptitude Interviews with AI
+        </h1>
+        <p class="hero-subtitle col-lg-8 mx-auto mb-4">
+            Experience real-time voice conversations with an intelligent AI interviewer that reads your resume, listens to your answers, challenges you with adaptive follow-ups, and provides immediate industry-grade feedback.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'register' %}" class="btn btn-primary-custom btn-lg px-4 shadow">
+                <i class="fa-solid fa-rocket me-2"></i> Start Practicing Now
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
+                <i class="fa-solid fa-arrow-right-to-bracket me-2"></i> Existing Candidate Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Key Features Section -->
+<div class="container py-5 mt-3">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Designed to Simulate Real Tech Interviews</h2>
+        <p class="text-muted">A full-stack AI interview preparation and candidate evaluation platform.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Feature 1 -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4">
+                <div class="text-primary fs-1 mb-3">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                </div>
+                <h5 class="fw-bold">Real-Time Voice Interaction</h5>
+                <p class="text-muted mb-0">
+                    Speak your answers naturally using the browser Web Speech API. The AI speaks questions aloud and listens attentively to your speech in real time.
+                </p>
+            </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4">
+                <div class="text-danger fs-1 mb-3">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <h5 class="fw-bold">Resume-Grounded Questions</h5>
+                <p class="text-muted mb-0">
+                    Upload your PDF resume. The system extracts your skills, frameworks, and projects, generating custom questions tailored specifically to your experience.
+                </p>
+            </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4">
+                <div class="text-success fs-1 mb-3">
+                    <i class="fa-solid fa-diagram-project"></i>
+                </div>
+                <h5 class="fw-bold">Adaptive Follow-Up Engine</h5>
+                <p class="text-muted mb-0">
+                    The AI maintains full conversation context. Strong answers trigger deeper questions, while incomplete answers trigger hints and clarification questions.
+                </p>
+            </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4">
+                <div class="text-warning fs-1 mb-3">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <h5 class="fw-bold">Instant Multidimensional Scoring</h5>
+                <p class="text-muted mb-0">
+                    Get an in-depth breakdown of technical correctness, clarity, missing concepts, mistake identification, and ideal benchmark answers after each response.
+                </p>
+            </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4">
+                <div class="text-info fs-1 mb-3">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h5 class="fw-bold">3 Core Interview Modes</h5>
+                <p class="text-muted mb-0">
+                    Practice across Technical (Python, Java, DSA, DBMS, Web Dev), HR Behavioral (Leadership, Conflict, Star Method), and Aptitude (Logical & Quantitative).
+                </p>
+            </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="col-md-4">
+            <div class="card card-custom card-hover h-100 p-4">
+                <div class="text-secondary fs-1 mb-3">
+                    <i class="fa-solid fa-route"></i>
+                </div>
+                <h5 class="fw-bold">Personalized Learning Roadmap</h5>
+                <p class="text-muted mb-0">
+                    Identifies knowledge gaps and automatically synthesizes a customized revision plan with study topics and targeted practice questions.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="fw-bold">How It Works</h3>
+            <p class="text-muted">Four simple steps to interview readiness</p>
+        </div>
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle fs-4 mb-3" style="width: 50px; height: 50px; display: inline-flex; align-items: center; justify-content: center;">1</span>
+                    <h6 class="fw-bold">Register & Upload Resume</h6>
+                    <p class="small text-muted">Upload your PDF resume to let AI extract your tech stack and projects.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle fs-4 mb-3" style="width: 50px; height: 50px; display: inline-flex; align-items: center; justify-content: center;">2</span>
+                    <h6 class="fw-bold">Select Category & Difficulty</h6>
+                    <p class="small text-muted">Choose Technical, HR, or Aptitude with custom questions count.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle fs-4 mb-3" style="width: 50px; height: 50px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+                    <h6 class="fw-bold">Voice-Based Live Interview</h6>
+                    <p class="small text-muted">Listen to the AI question and answer via your microphone in real time.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle fs-4 mb-3" style="width: 50px; height: 50px; display: inline-flex; align-items: center; justify-content: center;">4</span>
+                    <h6 class="fw-bold">Analytics & Learning Plan</h6>
+                    <p class="small text-muted">Receive your score breakdown, mistake analysis, and roadmap.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

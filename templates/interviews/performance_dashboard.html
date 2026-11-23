@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Performance Analytics Dashboard | AI Interviewer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-line text-warning me-2"></i>Performance Analytics</h2>
+            <p class="text-muted small mb-0">Visual analysis of your interview performance, skill mastery, and growth</p>
+        </div>
+        <a href="{% url 'interview_setup' %}" class="btn btn-primary-custom">
+            <i class="fa-solid fa-microphone me-1"></i> Start New Interview
+        </a>
+    </div>
+
+    <!-- Quick Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <span class="text-muted small fw-semibold">Total Completed</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ total_interviews }}</h3>
+                <small class="text-muted">Interviews scored</small>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <span class="text-muted small fw-semibold">Overall Average Score</span>
+                <h3 class="fw-bold mb-0 text-primary">{{ overall_avg }}/10</h3>
+                <small class="text-muted">Combined across all tracks</small>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <span class="text-muted small fw-semibold">Strongest Subject</span>
+                <h5 class="fw-bold mb-0 text-success text-truncate" title="{{ strongest_subject }}">{{ strongest_subject }}</h5>
+                <small class="text-muted">Top scoring topic</small>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card card-custom p-3 h-100">
+                <span class="text-muted small fw-semibold">Weakest Subject</span>
+                <h5 class="fw-bold mb-0 text-warning text-truncate" title="{{ weakest_subject }}">{{ weakest_subject }}</h5>
+                <small class="text-muted">Recommended for practice</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Performance Improvement Trend (Line Chart) -->
+        <div class="col-lg-8">
+            <div class="card card-custom p-4 shadow-sm h-100">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-arrow-trend-up text-primary me-2"></i>Performance Improvement Timeline</h5>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Category Breakdown (Bar Chart) -->
+        <div class="col-lg-4">
+            <div class="card card-custom p-4 shadow-sm h-100">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-layer-group text-success me-2"></i>Average Score by Track</h5>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Mastery Breakdown Table -->
+    <div class="card card-custom p-4 shadow-sm bg-white">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>Subject-Wise Mastery Breakdown</h5>
+        {% if subjects %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Subject / Domain</th>
+                            <th>Sessions Taken</th>
+                            <th>Average Score</th>
+                            <th>Mastery Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in subjects %}
+                        <tr>
+                            <td class="fw-semibold">{{ sub.subject }}</td>
+                            <td>{{ sub.count }}</td>
+                            <td>
+                                <strong class="{% if sub.avg_score >= 8.0 %}text-success{% elif sub.avg_score >= 5.0 %}text-primary{% else %}text-warning{% endif %}">
+                                    {{ sub.avg_score|floatformat:1 }}/10
+                                </strong>
+                            </td>
+                            <td>
+                                {% if sub.avg_score >= 8.0 %}
+                                    <span class="badge bg-success-subtle text-success">Mastered</span>
+                                {% elif sub.avg_score >= 5.0 %}
+                                    <span class="badge bg-primary-subtle text-primary">Competent</span>
+                                {% else %}
+                                    <span class="badge bg-warning-subtle text-warning-emphasis">Revision Needed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <p class="mb-0">Complete interview sessions to view detailed subject performance charts.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const timelineLabels = {{ timeline_labels_json|safe }};
+    const timelineScores = {{ timeline_scores_json|safe }};
+    const categoryScores = {{ category_scores_json|safe }};
+
+    // 1. Timeline Chart (Line)
+    const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+    new Chart(ctxTimeline, {
+        type: 'line',
+        data: {
+            labels: timelineLabels.length ? timelineLabels : ['Session 1'],
+            datasets: [{
+                label: 'Interview Score (out of 10)',
+                data: timelineScores.length ? timelineScores : [0],
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointBackgroundColor: '#4f46e5',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 10,
+                    ticks: { stepSize: 2 }
+                }
+            }
+        }
+    });
+
+    // 2. Category Breakdown Chart (Bar)
+    const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctxCategory, {
+        type: 'bar',
+        data: {
+            labels: ['Technical', 'HR Behavioral', 'Aptitude'],
+            datasets: [{
+                label: 'Average Score',
+                data: categoryScores,
+                backgroundColor: [
+                    'rgba(79, 70, 229, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(245, 158, 11, 0.8)'
+                ],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 10,
+                    ticks: { stepSize: 2 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

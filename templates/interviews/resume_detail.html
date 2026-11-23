@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Resume Analysis Report | AI Interviewer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Banner -->
+    <div class="card card-custom p-4 mb-4 bg-white">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="badge bg-danger rounded-circle p-3 fs-3">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-1">{{ resume.filename }}</h3>
+                        <p class="text-muted small mb-0">
+                            Parsed on {{ resume.uploaded_at|date:"d M Y, h:i A" }} | 
+                            <strong>{{ total_skills_count }}</strong> Technical Skills Detected
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'interview_setup' %}" class="btn btn-primary-custom">
+                    <i class="fa-solid fa-microphone me-1"></i> Start Interview With This Resume
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Score & Skills Breakdown -->
+        <div class="col-lg-7">
+            <!-- Score Card -->
+            <div class="card card-custom p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-gauge-high text-primary me-2"></i>Resume Readiness Score</h5>
+                    <span class="fs-4 fw-bold {% if resume.overall_score >= 80 %}text-success{% elif resume.overall_score >= 60 %}text-primary{% else %}text-warning{% endif %}">
+                        {{ resume.overall_score }}/100
+                    </span>
+                </div>
+                <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar {% if resume.overall_score >= 80 %}bg-success{% elif resume.overall_score >= 60 %}bg-primary{% else %}bg-warning{% endif %}" 
+                         role="progressbar" style="width: {{ resume.overall_score }}%;"></div>
+                </div>
+                <p class="small text-muted mb-0">{{ resume.analysis_summary }}</p>
+            </div>
+
+            <!-- Extracted Skills by Category -->
+            <div class="card card-custom p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-code text-primary me-2"></i>Extracted Technical Skills</h5>
+                
+                {% if skills_by_category %}
+                    {% for cat, skills in skills_by_category.items %}
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-secondary small text-uppercase mb-2">{{ cat }}</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for s in skills %}
+                                    <span class="badge bg-light text-dark border px-3 py-2 fs-6">
+                                        <i class="fa-solid fa-check text-success me-1"></i> {{ s }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted small">No technical skills detected automatically.</p>
+                {% endif %}
+            </div>
+
+            <!-- Extracted Projects -->
+            <div class="card card-custom p-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-diagram-project text-success me-2"></i>Projects Identified</h5>
+                {% if resume.projects_data %}
+                    <div class="list-group list-group-flush">
+                        {% for proj in resume.projects_data %}
+                            <div class="list-group-item px-0">
+                                <i class="fa-solid fa-folder-open text-primary me-2"></i>
+                                <span class="fw-semibold">{{ proj }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-light border small text-muted">
+                        No distinct projects detected. We recommend adding a dedicated "Projects" section to your resume.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Education, Experience & Improvement Suggestions -->
+        <div class="col-lg-5">
+            <!-- Missing Sections & Improvements -->
+            <div class="card card-custom p-4 mb-4 border-start border-warning border-4">
+                <h5 class="fw-bold mb-3 text-warning"><i class="fa-solid fa-triangle-exclamation me-2"></i>Areas for Resume Improvement</h5>
+                {% if resume.missing_sections %}
+                    <ul class="list-unstyled mb-0 small">
+                        {% for item in resume.missing_sections %}
+                            <li class="mb-2 d-flex align-items-start">
+                                <i class="fa-solid fa-circle-exclamation text-warning me-2 mt-1"></i>
+                                <span>{{ item }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="small text-success mb-0">
+                        <i class="fa-solid fa-circle-check me-1"></i> Great job! Your resume covers all core sections.
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Education -->
+            <div class="card card-custom p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-graduation-cap text-primary me-2"></i>Education</h5>
+                {% if resume.education_data %}
+                    <ul class="list-unstyled mb-0 small text-muted">
+                        {% for edu in resume.education_data %}
+                            <li class="mb-2"><i class="fa-solid fa-building-columns me-2 text-secondary"></i>{{ edu }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="small text-muted mb-0">No education entries extracted.</p>
+                {% endif %}
+            </div>
+
+            <!-- Certifications & Experience -->
+            <div class="card card-custom p-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-certificate text-info me-2"></i>Certifications & Experience</h5>
+                {% if resume.certifications_data or resume.experience_data %}
+                    <ul class="list-unstyled mb-0 small text-muted">
+                        {% for cert in resume.certifications_data %}
+                            <li class="mb-2"><i class="fa-solid fa-award me-2 text-warning"></i>{{ cert }}</li>
+                        {% endfor %}
+                        {% for exp in resume.experience_data %}
+                            <li class="mb-2"><i class="fa-solid fa-briefcase me-2 text-primary"></i>{{ exp }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="small text-muted mb-0">No certifications or internships detected.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
